@@ -1,19 +1,55 @@
-import { Controller, Get, Version } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AppService } from './app.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-// 对整个控制器进行版本控制
-// @Controller({
-//   path: 'api',
-//   version: '1', // 此时接口变为 /v1/api/xxx
-//   // ... other options
-// })
-@Controller('/api')
+interface IVerifyFile {
+  fileHash: string;
+  totalCount: number;
+  extname: string;
+}
+interface IUploadChunk {
+  fileHash: string;
+  chunkIndex: number;
+}
+interface IMergeFile {
+  fileHash: string;
+  extname: string;
+}
+
+@Controller('/api/file')
 export class AppController {
   constructor(private readonly appService: AppService) {}
-  // 也可以对某个接口进行版本控制
-  @Get('/get')
-  @Version('1') // 此时接口变为 /v1/api/get
-  getHello(): string {
-    return this.appService.getHello();
+
+  @Post('/verify')
+  verifyFile(@Body() fileInfo: IVerifyFile) {
+    const { fileHash, totalCount, extname } = fileInfo;
+    return this.appService.verifyFile(fileHash, totalCount, extname);
+  }
+
+  @Post('/upload')
+  @UseInterceptors(
+    FileInterceptor('chunk', {
+      limits: {
+        fileSize: 1024 * 1024 * 10,
+      },
+    }),
+  )
+  uploadChunk(
+    @UploadedFile() chunk: Express.Multer.File,
+    @Body() chunkInfo: IUploadChunk,
+  ) {
+    return this.appService.uploadChunk(chunk, chunkInfo);
+  }
+
+  @Post('/merge')
+  mergeFile(@Body() fileInfo: IMergeFile) {
+    const { fileHash, extname } = fileInfo;
+    return this.appService.mergeFile(fileHash, extname);
   }
 }
