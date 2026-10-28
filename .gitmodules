@@ -1,0 +1,6 @@
+# Preserve the existing gitlink; its upstream URL is not recorded in this repo.
+# Path mapping lets checkout's auth cleanup enumerate uninitialized submodules.
+# Do not initialize/download this submodule until its owner verifies the URL.
+[submodule "react-client"]
+	path = react-client
+	update = none
