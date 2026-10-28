@@ -4,7 +4,9 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  UseFilters,
 } from '@nestjs/common';
+import { MulterErrorFilter } from './multer-error.filter';
 import { AppService } from './app.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -33,6 +35,7 @@ export class AppController {
   }
 
   @Post('/upload')
+  @UseFilters(MulterErrorFilter)
   @UseInterceptors(
     FileInterceptor('chunk', {
       limits: {

@@ -30,4 +30,26 @@ jobs:
     - name: Audit dependency metadata (no lifecycle scripts)
       run: 'npm install --global --ignore-scripts pnpm@10.28.2
 
-        pnpm audit --audit-level=low --registry=https://registry.npmjs.org'
+        pnpm audit --json --audit-level=low --registry=https://registry.npmjs.org'
+  compatibility:
+    name: Nest upload compatibility tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: nest-server
+    env:
+      COREPACK_ENABLE_PROJECT_SPEC: '0'
+      npm_config_manage_package_manager_versions: 'false'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - run: npm install --global --ignore-scripts pnpm@10.28.2
+    - run: pnpm install --frozen-lockfile --ignore-scripts
+    - run: pnpm test --runInBand
+    - run: pnpm test:e2e --runInBand
+    - run: pnpm build
